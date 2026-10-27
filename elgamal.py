@@ -48,9 +48,9 @@ def generate_elgamal_keypair(p: int, g: int, preferred_x: int = None) -> dict:
 # ----------------------------------------------------------------------------
 def text_to_lecture_blocks(
     text: str, p: int, block_digits: int = None
-) -> tuple[list[int], int, str]:
+) -> tuple[list[int], int, str, int]:
     """Konversi teks alfabet ke deret angka 2 digit dan pemecahan blok desimal m_i < p.
-    Mengikuti format materi perkuliahan (A=00, B=01, ..., Z=25).
+    Mengembalikan (blocks, block_digits, num_str, pad_count).
     """
     cleaned = "".join(c.upper() for c in text if c.isalpha())
     if not cleaned:
@@ -62,7 +62,6 @@ def text_to_lecture_blocks(
         if block_digits % 2 != 0:
             raise ValueError("block_digits harus berupa bilangan genap.")
     else:
-        # Tentukan kapasitas digit genap per blok (2, 4, ...) yang memenuhi seluruh m_i < p
         max_even = max(2, (len(str(p - 1)) // 2) * 2)
         block_digits = 2
         for candidate in range(max_even, 1, -2):
@@ -74,8 +73,9 @@ def text_to_lecture_blocks(
                 block_digits = candidate
                 break
 
-    # Pastikan panjang karakter sesuai kelipatan blok (padding 'X' jika ganjil)
+    # Tambahkan padding 'X' jika panjang teks tidak kelipatan kapasitas huruf per blok
     chars_per_block = block_digits // 2
+    pad_count = 0
     if len(cleaned) % chars_per_block != 0:
         pad_count = chars_per_block - (len(cleaned) % chars_per_block)
         cleaned += "X" * pad_count
@@ -86,11 +86,11 @@ def text_to_lecture_blocks(
         chunk = num_str[i : i + block_digits]
         blocks.append(int(chunk))
 
-    return blocks, block_digits, num_str
+    return blocks, block_digits, num_str, pad_count
 
 
-def lecture_blocks_to_text(blocks: list[int], block_digits: int) -> str:
-    """Rekonstruksi blok desimal menjadi teks alfabet asli."""
+def lecture_blocks_to_text(blocks: list[int], block_digits: int, pad_count: int = 0) -> str:
+    """Rekonstruksi blok desimal menjadi teks alfabet asli dengan melepas karakter padding."""
     full_str = "".join(f"{b:0{block_digits}d}" for b in blocks)
     chars = []
     for i in range(0, len(full_str), 2):
@@ -99,6 +99,10 @@ def lecture_blocks_to_text(blocks: list[int], block_digits: int) -> str:
             val = int(pair)
             if 0 <= val <= 25:
                 chars.append(chr(ord("A") + val))
+
+    if pad_count > 0 and len(chars) >= pad_count:
+        chars = chars[:-pad_count]
+
     return "".join(chars)
 
 

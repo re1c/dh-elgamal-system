@@ -15,23 +15,20 @@ from crypto_core import (
 
 
 def generate_dh_parameters(min_val: int = 250, max_val: int = 5000) -> dict:
-    """Membangkitkan pasangan parameter publik (n, g) yang valid.
-    n: bilangan prima modulus.
-    g: akar primitif (generator) dari n.
-    """
+    """Membangkitkan pasangan parameter publik (n, g) yang valid."""
     n = generate_prime(min_val, max_val)
     g = find_primitive_root(n)
     return {"n": n, "g": g}
 
 
-def validate_dh_parameters(n: int, g: int) -> tuple[bool, str]:
-    """Validasi matematis parameter publik Diffie-Hellman."""
+def validate_dh_parameters(n: int, g: int, param_name: str = "n") -> tuple[bool, str]:
+    """Validasi matematis parameter publik Diffie-Hellman / ElGamal."""
     if not is_prime(n):
-        return False, f"Modulus n={n} bukan bilangan prima."
+        return False, f"Modulus {param_name}={n} bukan bilangan prima."
     if not (1 < g < n):
         return False, f"Generator g harus berada pada rentang 1 < g < {n}."
     if not is_primitive_root(g, n):
-        return False, f"Nilai g={g} bukan akar primitif dari n={n}."
+        return False, f"Nilai g={g} bukan akar primitif dari {param_name}={n}."
     return True, "Parameter publik valid."
 
 
