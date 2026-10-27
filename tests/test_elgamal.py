@@ -47,22 +47,22 @@ def test_elgamal_slide_halo_example():
     assert recovered == "HALO"
 
 
-def test_elgamal_lecture_odd_length_padding():
-    # Menguji kata 9 huruf (panjang ganjil)
+def test_elgamal_lecture_padding():
     p = 3319
     g = 6
     keypair = generate_elgamal_keypair(p, g)
 
     blocks, block_digits, _, pad_count = text_to_lecture_blocks("LOGARITMA", p)
-    assert pad_count == 1  # 1 huruf 'X' ditambahkan sebagai padding
+    assert pad_count == 1
 
     enc_records = encrypt_elgamal_blocks(blocks, keypair["y"], g, p)
     cipher_pairs = [(r["a"], r["b"]) for r in enc_records]
 
     dec_records = decrypt_elgamal_blocks(cipher_pairs, keypair["x"], p)
-    recovered = lecture_blocks_to_text([d["m"] for d in dec_records], block_digits, pad_count)
+    recovered = lecture_blocks_to_text(
+        [d["m"] for d in dec_records], block_digits, pad_count
+    )
 
-    # Teks kembali utuh tanpa huruf 'X'
     assert recovered == "LOGARITMA"
 
 
